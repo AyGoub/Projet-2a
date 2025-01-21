@@ -106,6 +106,8 @@ Instagram Insights is a Streamlit application that allows you to analyze and vis
 # Web App
 Click [Here](https://huggingface.co/spaces/Kaludi/Instagram-Insights-Streamlit_App "Here") To View This App Online!
 
+![image](https://user-images.githubusercontent.com/63890666/227067445-0e976ef8-a0e9-499f-b333-26dea8471c76.png)
+
 ## Features
 
 -   Visualize insights from your Instagram data like followers, following, follow requests, and more.
@@ -150,4 +152,3 @@ To install the required libraries, run the following command:
 `streamlit run app.py` 
 
 4.  Open your web browser and visit `http://localhost:8501`.
->>>>>>> 4d14084 (adding updated files for the Instagram Insights Project)
