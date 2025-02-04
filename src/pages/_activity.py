@@ -114,19 +114,21 @@ if uploaded_files:
             
             if 'liked_posts' in file.name:
                 activity_data['liked_posts'] = process_liked_posts(content)
-                st.write(f"Debug liked_posts:")
-                st.write(content.keys())  # voir les clés du fichier JSON
-                st.write(activity_data['liked_posts'].shape)  # voir la taille du DataFrame
-                if not activity_data['liked_posts'].empty:
-                    st.write(activity_data['liked_posts'].head())
+                with st.expander("Debug Information"):
+                    st.write(f"Debug liked_posts:")
+                    st.write(content.keys())  # voir les clés du fichier JSON
+                    st.write(activity_data['liked_posts'].shape)  # voir la taille du DataFrame
+                    if not activity_data['liked_posts'].empty:
+                        st.write(activity_data['liked_posts'].head())
                     
             elif 'liked_comments' in file.name:
                 activity_data['liked_comments'] = process_liked_comments(content)
-                st.write(f"Debug liked_comments:")
-                st.write(content.keys())
-                st.write(activity_data['liked_comments'].shape)
-                if not activity_data['liked_comments'].empty:
-                    st.write(activity_data['liked_comments'].head())
+                with st.expander("Debug Information"):
+                    st.write(f"Debug liked_comments:")
+                    st.write(content.keys())
+                    st.write(activity_data['liked_comments'].shape)
+                    if not activity_data['liked_comments'].empty:
+                        st.write(activity_data['liked_comments'].head())
                     
             elif 'post_comments' in file.name:
                 activity_data['post_comments'] = process_comments(content, 'post')
@@ -161,7 +163,7 @@ if uploaded_files:
                     st.caption(f"Last 30 days: {recent_count}")
 
         st.header("Activity Timelines")
-        tabs = st.tabs(["Posts", "Comments", "Reels"])
+        tabs = st.tabs(["Posts", "Comments", "Reels", "All Activities"])
         
         with tabs[0]:
             if activity_data['liked_posts'] is not None and not activity_data['liked_posts'].empty:
@@ -199,6 +201,20 @@ if uploaded_files:
                         .sort_values('timestamp', ascending=False)
                         .head(100)
                     )
+        
+        with tabs[3]:
+            st.subheader("All Activities Combined")
+            combined_df = pd.concat(filter(lambda d: d is not None, activity_data.values()), ignore_index=True)
+            if not combined_df.empty:
+                plot_activity_timeline(combined_df, "All Activities")
+                
+                csv_data = combined_df.to_csv(index=False)
+                st.download_button(
+                    label="Download Combined CSV",
+                    data=csv_data,
+                    file_name="all_activities.csv",
+                    mime="text/csv"
+                )
 
         st.header("Daily Activity Patterns")
         for activity_type, df in activity_data.items():
