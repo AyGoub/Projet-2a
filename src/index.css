@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-md p-6 transition-all duration-300 hover:shadow-lg border border-purple-50;
+}
+
+.card-header {
+  @apply flex items-center mb-6 pb-4 border-b border-purple-100;
+}
+
+.card-title {
+  @apply text-xl font-semibold text-gray-800;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-purple-600 mb-1;
+}
+
+.stat-label {
+  @apply text-sm text-gray-500;
+}
+
+.gradient-text {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600;
+}
