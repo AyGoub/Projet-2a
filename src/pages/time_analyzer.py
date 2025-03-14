@@ -399,8 +399,6 @@ def run_time_analysis(instagram_data=None):
             'theme': lambda x: x.iloc[0] if 'theme' in filtered_data.columns else None
         }).reset_index()
         
-        # Version corrigée
-        session_detail = session_detail.reset_index()  # S'assurer que session_id est une colonne
         session_detail['date'] = session_detail['timestamp'].dt.date
         session_detail['heure'] = session_detail['timestamp'].dt.strftime('%H:%M')
         session_detail['durée_min'] = (session_detail['session_duration'] / 60).round(1)
@@ -410,12 +408,8 @@ def run_time_analysis(instagram_data=None):
         if 'theme' in filtered_data.columns:
             display_cols.append('theme')
 
-        # Ensure 'timestamp' exists before sorting
-        if 'timestamp' in session_detail.columns:
-            session_detail_display = session_detail[display_cols].sort_values('timestamp', ascending=False)
-        else:
-            # Sort by 'date' and 'heure' if 'timestamp' is not available
-            session_detail_display = session_detail[display_cols].sort_values(['date', 'heure'], ascending=False)
+        # Ne pas trier du tout - juste prendre les colonnes à afficher
+        session_detail_display = session_detail[display_cols].copy()
 
         st.dataframe(
             session_detail_display,
@@ -425,13 +419,12 @@ def run_time_analysis(instagram_data=None):
         # Export CSV
         csv = session_detail[display_cols].to_csv(index=False).encode('utf-8')
         st.download_button(
-                "Télécharger les détails de session (CSV)",
-                csv,
-                "instagram_sessions.csv",
-                "text/csv",
-                key='download_sessions'
-            )
-    
+            "Télécharger les détails de session (CSV)",
+            csv,
+            "instagram_sessions.csv",
+            "text/csv",
+            key='download_sessions'
+        )
     else:
         st.info("""
         Aucune donnée temporelle disponible. Veuillez soit :
