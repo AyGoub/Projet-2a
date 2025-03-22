@@ -1,6 +1,8 @@
 import streamlit as st
 import sys
 import os
+from src.utils.data_loader import TemporaryFileManager
+
 # Ajouter le répertoire parent au chemin
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -39,7 +41,14 @@ with st.expander("Guide d'importation des fichiers", expanded=True):
     Naviguez entre les onglets pour analyser différentes facettes de vos données.
     """)
 
+uploaded_file = st.file_uploader("Upload your Instagram data", type=['zip'])
 
+if uploaded_file is not None:
+    # Stocker le fichier dans session_state pour accès global
+    tfm = TemporaryFileManager()
+    tfm.load_zip_to_temp(uploaded_file)
+    st.session_state["tempFileManager"] = tfm
+    st.success("Fichier chargé avec succès !")
 
 
 # Interface principale avec onglets (ajout de l'onglet Time Analysis)

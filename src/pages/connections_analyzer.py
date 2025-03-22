@@ -4,9 +4,9 @@ import json
 from datetime import datetime
 import plotly.graph_objs as go
 
-def process_connections(data, connection_type):
+def process_connections(data):
     users = []
-    json_data = data[connection_type]
+    json_data = data
     
     for item in json_data:
         user_data = item['string_list_data'][0]
@@ -39,36 +39,33 @@ def plot_connections_timeline(df, connection_type):
         return fig
 
 
+def load_connections_data(tempFileManager):
+    connections_data = {
+        'followers': None,
+        'following': None
+    }
+
+    try:
+        followers_1_file = tempFileManager.load_json('followers_1.json')
+        if followers_1_file:
+            connections_data['followers'] = process_connections(followers_1_file)
+
+        following_file = tempFileManager.load_json('following.json')
+        if following_file:
+            connections_data['following'] = process_connections(following_file['relationships_following'])
+            
+    except Exception as e:
+        st.error(f"Error loading connections data following: {str(e)}")
+
+    return connections_data
+
 def run_connections_analysis():
     st.title('Instagram Connections Analysis')
     
-    uploaded_files = st.file_uploader(
-        "Upload Instagram connections files (followers.json, following.json)",
-        type=['json'],
-        accept_multiple_files=True
-    )
-
-    if uploaded_files:
-        connections_data = {
-            'followers': None,
-            'following': None
-        }
+    if "tempFileManager" in st.session_state:
+        tempFileManager = st.session_state["tempFileManager"]
         
-        for file in uploaded_files:
-            try:
-                content = file.read()
-                data = json.loads(content)
-                
-                if 'followers.json' in file.name:
-                    connections_data['followers'] = process_connections(data, 'relationships_followers')
-                elif 'following.json' in file.name:
-                    connections_data['following'] = process_connections(data, 'relationships_following')
-                    
-                file.seek(0)  # Reset file pointer
-                
-            except Exception as e:
-                st.error(f"Error processing {file.name}: {str(e)}")
-                continue
+        connections_data = load_connections_data(tempFileManager)
 
         # Affichage des statistiques
         if connections_data['followers'] is not None or connections_data['following'] is not None:

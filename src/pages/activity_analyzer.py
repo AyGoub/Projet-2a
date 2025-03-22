@@ -5,6 +5,15 @@ from datetime import datetime
 import plotly.graph_objs as go
 import plotly.express as px
 
+
+import tempfile
+from pathlib import Path
+import zipfile
+import os
+import json
+
+#from src.utils.data_loader import TemporaryFileManager
+
 def process_liked_posts(data):
     likes = []
     if 'likes_media_likes' in data:
@@ -79,6 +88,7 @@ def plot_activity_timeline(df, activity_type):
         )
         
         return fig
+
 def plot_activity_by_hour(df, activity_type):
     """
     Crée un graphique montrant l'activité par heure de la journée et met en évidence
@@ -142,14 +152,9 @@ def plot_activity_by_hour(df, activity_type):
         return fig
     return None
 
-def run_activity_analysis():
-    st.title('Instagram Activity Analysis')
-    
-    uploaded_files = st.file_uploader(
-        "Upload Instagram activity files",
-        type=['json'],
-        accept_multiple_files=True
-    )
+
+
+def load_activity_data(tempFileManager):
 
     activity_data = {
         'liked_posts': None,
@@ -158,27 +163,38 @@ def run_activity_analysis():
         'reels_comments': None
     }
 
-    if uploaded_files:
+    try:
+        liked_posts_file = tempFileManager.load_json("liked_posts.json")
+        if liked_posts_file:
+            activity_data['liked_posts'] = process_liked_posts(liked_posts_file)
+
+        liked_comments_file = tempFileManager.load_json("liked_comments.json")
+        if liked_comments_file:
+            activity_data['liked_comments'] = process_liked_comments(liked_comments_file)
+
+        post_comments_file = tempFileManager.load_json("post_comments.json")
+        if post_comments_file:
+            activity_data['post_comments'] = process_comments(post_comments_file, 'post')
+        
+        reels_comments_file = tempFileManager.load_json("reels_comments.json")
+        if reels_comments_file:
+            activity_data['reels_comments'] = process_comments(reels_comments_file, 'reel')
+
+        st.write(f"Processed files successfully")
+
+    except Exception as e:
+            st.error(f"Error processing files: {str(e)}")
+    
+    return activity_data
+
+def run_activity_analysis():
+    st.title('Instagram Activity Analysis')
+
+    if "tempFileManager" in st.session_state:
+        tempFileManager = st.session_state["tempFileManager"]
+
         # Traitement des fichiers d'abord
-        for file in uploaded_files:
-            try:
-                content = json.loads(file.getvalue().decode('utf-8'))
-                
-                if 'liked_posts' in file.name:
-                    activity_data['liked_posts'] = process_liked_posts(content)
-                elif 'liked_comments' in file.name:
-                    activity_data['liked_comments'] = process_liked_comments(content)
-                elif 'post_comments' in file.name:
-                    activity_data['post_comments'] = process_comments(content, 'post')
-                elif 'reels_comments' in file.name:
-                    activity_data['reels_comments'] = process_comments(content, 'reel')
-                    
-                st.write(f"Processed {file.name} successfully")
-                
-            except Exception as e:
-                st.error(f"Error processing {file.name}: {str(e)}")
-                st.write("Error details:", str(e))
-                continue
+        activity_data = load_activity_data(tempFileManager)
 
         # Puis vérification des données et affichage
         if any(v is not None and not v.empty for v in activity_data.values()):
